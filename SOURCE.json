@@ -1,0 +1,12 @@
+{
+  "upstreamRepository": "Project-N-E-K-O/neko-auth-platform",
+  "upstreamCommit": "4d4293ab83cd7c2cf67b28296bcf8d0d623e96de",
+  "packagePath": "packages/auth-client",
+  "package": "@neko/auth-client",
+  "version": "0.1.0-rc.3",
+  "contractVersion": "browser-auth-v1",
+  "tarball": "neko-auth-client-0.1.0-rc.3.tgz",
+  "sha256": "cb851a67cdc98be6c4f1d8238595901563a4eb541fdaf35220d13a1f813ee476",
+  "node": "22",
+  "npm": "11.18.0"
+}

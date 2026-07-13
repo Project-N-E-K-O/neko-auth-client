@@ -1,0 +1,46 @@
+name: SDK integrity
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: packages/auth-client
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: packages/auth-client/package-lock.json
+      - name: Install the package-pinned npm
+        run: |
+          NPM_VERSION="$(node -p "require('./package.json').packageManager.split('@').at(-1)")"
+          npm install --global "npm@$NPM_VERSION"
+          test "$(npm --version)" = "$NPM_VERSION"
+      - name: Verify mirror metadata
+        run: |
+          test "$(node -p "require('./package.json').version")" = "$(node -p "require('../../SOURCE.json').version")"
+          test "$(node -p "require('./package.json').nekoAuthContract")" = "$(node -p "require('../../SOURCE.json').contractVersion")"
+          test "$(node -p "require('./package.json').packageManager.split('@').at(-1)")" = "$(node -p "require('../../SOURCE.json').npm")"
+      - run: npm ci --include=dev
+      - run: npm test
+      - run: npm run lint
+      - run: npm run build
+      - name: Rebuild the immutable SDK artifact
+        run: |
+          mkdir -p "$RUNNER_TEMP/auth-sdk"
+          npm pack --pack-destination "$RUNNER_TEMP/auth-sdk"
+          ACTUAL_SHA="$(sha256sum "$RUNNER_TEMP/auth-sdk"/*.tgz | cut -d ' ' -f 1)"
+          EXPECTED_SHA="$(node -p "require('../../SOURCE.json').sha256")"
+          test "$ACTUAL_SHA" = "$EXPECTED_SHA"

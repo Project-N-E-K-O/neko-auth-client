@@ -1,0 +1,42 @@
+{
+  "name": "@neko/auth-client",
+  "version": "0.1.0-rc.3",
+  "description": "Framework-independent browser OAuth 2.0 Authorization Code + PKCE client for N.E.K.O.",
+  "nekoAuthContract": "browser-auth-v1",
+  "packageManager": "npm@11.18.0",
+  "type": "module",
+  "sideEffects": false,
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "rm -rf dist && tsc -p tsconfig.build.json",
+    "test": "rm -rf .test-dist && tsc -p tsconfig.test.json && node --test .test-dist/test/*.test.js",
+    "lint": "eslint src test",
+    "prepack": "npm run build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Project-N-E-K-O/neko-auth-platform.git",
+    "directory": "packages/auth-client"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.1",
+    "@types/node": "^24.10.1",
+    "eslint": "^9.39.1",
+    "globals": "^16.5.0",
+    "typescript": "~5.9.3",
+    "typescript-eslint": "^8.46.4"
+  }
+}
