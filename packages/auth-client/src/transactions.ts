@@ -3,7 +3,7 @@ import type { StorageLike, TransactionKeys } from "./types.js";
 export type OAuthTransaction = {
   verifier: string;
   next: string;
-  createdAt: number;
+  createdAt?: number;
 };
 
 export const DEFAULT_TRANSACTION_KEYS: TransactionKeys = {
@@ -13,10 +13,15 @@ export const DEFAULT_TRANSACTION_KEYS: TransactionKeys = {
   prefix: "nekoAuthTx:",
 };
 
-const TRANSACTION_TTL_MS = 30 * 60 * 1000;
+export const DEFAULT_TRANSACTION_TTL_MS = 30 * 60 * 1000;
 
-export function pruneOAuthTransactions(storage: StorageLike, prefix: string, currentTime: number) {
-  const expiresAt = currentTime - TRANSACTION_TTL_MS;
+export function pruneOAuthTransactions(
+  storage: StorageLike,
+  prefix: string,
+  currentTime: number,
+  maxAgeMs = DEFAULT_TRANSACTION_TTL_MS,
+) {
+  const expiresAt = currentTime - maxAgeMs;
   for (let index = storage.length - 1; index >= 0; index -= 1) {
     const key = storage.key(index);
     if (!key?.startsWith(prefix)) {
@@ -24,7 +29,12 @@ export function pruneOAuthTransactions(storage: StorageLike, prefix: string, cur
     }
     try {
       const value = JSON.parse(storage.getItem(key) || "{}") as Partial<OAuthTransaction>;
-      if (typeof value.createdAt !== "number" || value.createdAt < expiresAt) {
+      if (
+        typeof value.createdAt !== "number"
+        || !Number.isFinite(value.createdAt)
+        || value.createdAt < expiresAt
+        || value.createdAt > currentTime
+      ) {
         storage.removeItem(key);
       }
     } catch {
@@ -49,11 +59,23 @@ export function readOAuthTransaction(storage: StorageLike, prefix: string, state
     return {
       verifier: parsed.verifier,
       next: parsed.next,
-      createdAt: typeof parsed.createdAt === "number" ? parsed.createdAt : Date.now(),
+      createdAt: typeof parsed.createdAt === "number" ? parsed.createdAt : undefined,
     };
   } catch {
     return null;
   }
+}
+
+export function isOAuthTransactionWithinAge(
+  transaction: OAuthTransaction | null,
+  currentTime: number,
+  maxAgeMs: number,
+) {
+  if (!transaction || typeof transaction.createdAt !== "number" || !Number.isFinite(transaction.createdAt)) {
+    return false;
+  }
+  const age = currentTime - transaction.createdAt;
+  return age >= 0 && age <= maxAgeMs;
 }
 
 export function removeOAuthTransaction(storage: StorageLike, prefix: string, state: string | null) {
