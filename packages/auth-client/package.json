@@ -1,6 +1,6 @@
 {
   "name": "@neko/auth-client",
-  "version": "0.1.0-rc.3",
+  "version": "0.1.0-rc.6",
   "description": "Framework-independent browser OAuth 2.0 Authorization Code + PKCE client for N.E.K.O.",
   "nekoAuthContract": "browser-auth-v1",
   "packageManager": "npm@11.18.0",
